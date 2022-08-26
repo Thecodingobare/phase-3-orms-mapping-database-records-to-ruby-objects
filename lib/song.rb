@@ -49,4 +49,39 @@ class Song
     song.save
   end
 
+  #convert what database gives us into a ruby object
+
+  def self.new_from_db(row)
+    #self.new is equivalent to Song.new
+    self.new(id: row[0],name: row[1], album: row[2])
+  end
+
+  #Returning all songs from the database
+  def self.all
+    sql=<<-SQL
+
+        SELECT * FROM songs
+    SQL
+    DB[:conn].execute(sql).map do |row|
+      self.new_from_db(row)
+  end
 end
+
+  def self.find_by_name(name)
+    sql=<<-SQL
+    SELECT * FROM songs
+    WHERE name = ?
+    LIMIT 1
+    SQL
+
+    DB[:conn].execute(sql, name).map do |row|
+      self.new_from_db(row)
+    end.first
+  end
+
+end
+
+
+# Don't be freaked out by that #first method chained to the end of the DB[:conn].execute(sql, name).map block. The return value of the #map method is an array, and we're simply grabbing the #first element from the returned array. Chaining is cool!
+
+# Let's try out this new method. Exit Pry, and run ruby bin/run again:
